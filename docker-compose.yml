@@ -1,31 +1,23 @@
-version: '3.8'
-
 services:
   db:
-    image: postgres:13
+    image: postgres:17
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     ports:
       - "5432:5432"
-    secrets:
-      - db_password
 
   app:
     build: .
     depends_on:
       - db
     environment:
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DB_NAME=${DB_NAME}
-      - DB_HOST=${DB_HOST}
-      - DB_PORT=${DB_PORT}
-    secrets:
-      - db_password
-    command: ["sh", "-c", "source .env && go run cmd/main.go"]
+      - AWS_SECRET_NAME=OnionArchitectureDDDinGolang/db_credentials
+    command: ["sh", "-c", "go run cmd/main.go"]
 
 secrets:
-  db_password:
+  aws_access_key_id:
+    external: true
+  aws_secret_access_key:
     external: true
