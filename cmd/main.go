@@ -5,14 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"order-service/internal/infrastructure/awsservice"
 	"os"
-	"os/exec"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/service/secretsmanager"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 type DBConfig struct {
@@ -23,52 +21,38 @@ type DBConfig struct {
 	Port     string `json:"DB_PORT"`
 }
 
-type Order struct {
-	OrderId string `json:`
-}
-
 func main() {
-	// Load AWS config
-	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion("us-east-2"))
+	// Retrieve database configuration from AWS Secrets Manager
+	secretsManager := &awsservice.AwsSecretsManager{}
+	secretValue, err := secretsManager.GetSecretValue(context.Background(), os.Getenv("AWS_SECRET_NAME"))
 	if err != nil {
-		log.Fatalf("unable to load SDK config, %v", err)
+		log.Fatalf("failed to retrieve secret value: %v", err)
 	}
 
-	// Create Secrets Manager client
-	svc := secretsmanager.NewFromConfig(cfg)
-
-	// Retrieve secret value
-	secretName := os.Getenv("AWS_SECRET_NAME")
-	fmt.Printf("my secret name is: %s\n", secretName)
-	result, err := svc.GetSecretValue(context.TODO(), &secretsmanager.GetSecretValueInput{
-		SecretId: aws.String(secretName),
-	})
-	if err != nil {
-		// For a list of exceptions thrown, see
-		// https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
-		log.Fatalf("failed to retrieve secret value, %v", err)
-	}
-
-	// Parse the secret JSON
-	secretString := *result.SecretString
 	var dbConfig DBConfig
-	if err := json.Unmarshal([]byte(secretString), &dbConfig); err != nil {
-		log.Fatalf("failed to unmarshal secret string, %v", err)
+	if err := json.Unmarshal([]byte(secretValue), &dbConfig); err != nil {
+		log.Fatalf("failed to unmarshal secret string: %v", err)
 	}
 
-	dsn := "host=" + dbConfig.Host + " user=" + dbConfig.User + " password=" + dbConfig.Password + " dbname=" + dbConfig.Name + " port=" + dbConfig.Port + " sslmode=disable"
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", dbConfig.User, dbConfig.Password, dbConfig.Host, dbConfig.Port, dbConfig.Name)
+
+	// Connect to the database
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info),
+	})
 	if err != nil {
 		log.Fatalf("could not connect to the database: %v", err)
 	}
 
-	log.Println("Connected to the database successfully: %v", db)
+	log.Printf("Connected to the database successfully: %v", db)
 
-	// Apply migrations using golang-migrate
-	cmd := exec.Command("migrate", "-path", "sql/migrations", "-database", dsn, "up")
-	if err := cmd.Run(); err != nil {
-		log.Fatalf("migration failed: %v", err)
+	// Apply migrations
+	err = db.AutoMigrate(&Order{})
+	if err != nil {
+		log.Fatalf("failed to migrate database: %v", err)
 	}
+
+	log.Println("Database migration completed successfully.")
 
 	// Your application logic here
 }

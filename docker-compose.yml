@@ -1,3 +1,4 @@
+version: '3.7'
 services:
   db:
     image: postgres:17
@@ -5,19 +6,26 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
+      POSTGRES_HOST: ${DB_HOST}
     ports:
       - "5432:5432"
+    networks:
+      - orders-network
 
   app:
     build: .
     depends_on:
       - db
-    environment:
-      - AWS_SECRET_NAME=OnionArchitectureDDDinGolang/db_credentials
+    env_file:
+      - .env.development
+    volumes:
+      - .:/app
+      - /c/Users/Matt/.aws:/root/.aws:ro
     command: ["sh", "-c", "go run cmd/main.go"]
+    ports:
+      - "8080:8080"
+    networks:
+      - orders-network
 
-secrets:
-  aws_access_key_id:
-    external: true
-  aws_secret_access_key:
-    external: true
+networks:
+  orders-network:
