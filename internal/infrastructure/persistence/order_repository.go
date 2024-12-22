@@ -1,8 +1,8 @@
 package persistence
 
 import (
-	"OnionArchitectureDDDinGolang/internal/domain/models"
-	"OnionArchitectureDDDinGolang/internal/domain/repositories"
+	"order-service/internal/domain/models"
+	"order-service/internal/domain/repositories"
 
 	"gorm.io/gorm"
 )

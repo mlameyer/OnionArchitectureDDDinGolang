@@ -1,6 +1,6 @@
 package repositories
 
-import "OnionArchitectureDDDinGolang/internal/domain/models"
+import "order-service/internal/domain/models"
 
 type OrderRepository interface {
 	Save(order models.Order) error
