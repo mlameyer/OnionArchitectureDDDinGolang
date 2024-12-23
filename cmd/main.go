@@ -14,11 +14,23 @@ import (
 	"order-service/internal/infrastructure/tracing"
 	"os"
 
+	"github.com/gofiber/contrib/swagger"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
+
+// @title Order Service API
+// @version 1.0
+// @description This is an API for managing orders
+// @termsOfService http://swagger.io/terms/
+// @contact.name API Support
+// @contact.url http://www.swagger.io/support
+// @contact.email support@swagger.io
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+// @host localhost:8080
 
 type DBConfig struct {
 	User     string `json:"DB_USER"`
@@ -92,6 +104,14 @@ func main() {
 	// Set up Fiber and API handlers
 	app := fiber.New()
 	handlers.NewOrderHandler(app, orderService)
+
+	// Serve Swagger UI
+	app.Use(swagger.New(swagger.Config{
+		BasePath: "/",
+		FilePath: "./docs/swagger.json",
+		Path:     "swagger",
+		Title:    "Swagger API Docs",
+	}))
 
 	// Start the server
 	logging.Logger.Info().Msg("Starting server on port 8080")
