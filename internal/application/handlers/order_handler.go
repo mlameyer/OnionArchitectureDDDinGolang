@@ -30,9 +30,9 @@ func NewOrderHandler(app *fiber.App, service *services.OrderService) {
 // @Accept json
 // @Produce json
 // @Param order body models.Order true "Order"
-// @Success 201 {object} models.Order
-// @Failure 400 {object} fiber.Map
-// @Failure 500 {object} fiber.Map
+// @Success 201 {object} dto.OrderResponse
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 500 {object} dto.ErrorResponse
 // @Router /orders [post]
 func (h *OrderHandler) CreateOrder(c *fiber.Ctx) error {
 	var order models.Order
@@ -59,9 +59,9 @@ func (h *OrderHandler) CreateOrder(c *fiber.Ctx) error {
 // @Tags orders
 // @Produce json
 // @Param id path int true "Order ID"
-// @Success 200 {object} models.Order
-// @Failure 400 {object} fiber.Map
-// @Failure 500 {object} fiber.Map
+// @Success 200 {object} dto.OrderResponse
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 500 {object} dto.ErrorResponse
 // @Router /orders/{id} [get]
 func (h *OrderHandler) GetOrderByID(c *fiber.Ctx) error {
 	id, err := strconv.ParseUint(c.Params("id"), 10, 32)
@@ -88,8 +88,8 @@ func (h *OrderHandler) GetOrderByID(c *fiber.Ctx) error {
 // @Description Get a list of all orders
 // @Tags orders
 // @Produce json
-// @Success 200 {array} models.Order
-// @Failure 500 {object} fiber.Map
+// @Success 200 {array} dto.OrderResponse
+// @Failure 500 {object} dto.ErrorResponse
 // @Router /orders [get]
 func (h *OrderHandler) GetAllOrders(c *fiber.Ctx) error {
 	orders, err := h.service.GetAllOrders()
@@ -116,9 +116,9 @@ func (h *OrderHandler) GetAllOrders(c *fiber.Ctx) error {
 // @Produce json
 // @Param id path int true "Order ID"
 // @Param item body models.OrderItem true "Order Item"
-// @Success 200 {object} models.Order
-// @Failure 400 {object} fiber.Map
-// @Failure 500 {object} fiber.Map
+// @Success 200 {object} dto.OrderResponse
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 500 {object} dto.ErrorResponse
 // @Router /orders/{id}/items [post]
 func (h *OrderHandler) AddItemToOrder(c *fiber.Ctx) error {
 	orderID, err := strconv.ParseUint(c.Params("id"), 10, 32)
