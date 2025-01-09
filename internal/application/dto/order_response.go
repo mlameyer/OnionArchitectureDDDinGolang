@@ -2,7 +2,7 @@ package dto
 
 // OrderResponse represents an order response
 type OrderResponse struct {
-	OrderID     uint                `json:"order_id"`
+	OrderID     string              `json:"order_id"`
 	CustomerID  uint                `json:"customer_id"`
 	Items       []OrderItemResponse `json:"items"`
 	TotalAmount float64             `json:"total_amount"`

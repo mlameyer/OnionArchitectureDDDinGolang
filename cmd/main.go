@@ -80,12 +80,7 @@ func main() {
 	logging.Logger.Info().Msgf("Connected to the database successfully: %v", db)
 
 	// Apply migrations
-	err = db.AutoMigrate(&models.Order{})
-	if err != nil {
-		logging.Logger.Error().Msgf("failed to migrate database: %v", err)
-	}
-
-	err = db.AutoMigrate(&models.OrderItem{})
+	err = db.AutoMigrate(&models.Order{}, &models.OrderItem{})
 	if err != nil {
 		logging.Logger.Error().Msgf("failed to migrate database: %v", err)
 	}
@@ -105,13 +100,15 @@ func main() {
 	app := fiber.New()
 	handlers.NewOrderHandler(app, orderService)
 
-	// Serve Swagger UI
-	app.Use(swagger.New(swagger.Config{
+	var swag = swagger.New(swagger.Config{
 		BasePath: "/",
 		FilePath: "./docs/swagger.json",
 		Path:     "swagger",
 		Title:    "Swagger API Docs",
-	}))
+	})
+
+	// Serve Swagger UI
+	app.Use(swag)
 
 	// Start the server
 	logging.Logger.Info().Msg("Starting server on port 8080")

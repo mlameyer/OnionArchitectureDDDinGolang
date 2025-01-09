@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"order-service/internal/application/dto"
-	"order-service/internal/domain/services"
+	"order-service/internal/application/services"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
@@ -10,12 +10,12 @@ import (
 
 // OrderHandler handles order-related API requests
 type OrderHandler struct {
-	service *services.OrderService
+	service services.OrderService
 }
 
 // NewOrderHandler initializes the order handler with routes
-func NewOrderHandler(app *fiber.App, service *services.OrderService) {
-	handler := &OrderHandler{service}
+func NewOrderHandler(app *fiber.App, service services.OrderService) {
+	handler := &OrderHandler{service: service}
 	app.Post("/orders", handler.CreateOrder)
 	app.Get("/orders/:id", handler.GetOrderByID)
 	app.Get("/orders", handler.GetAllOrders)
@@ -35,10 +35,13 @@ func NewOrderHandler(app *fiber.App, service *services.OrderService) {
 // @Router /orders [post]
 func (h *OrderHandler) CreateOrder(c *fiber.Ctx) error {
 	var order dto.OrderCreateDto
+	order.NewOrderCreateDto()
+
 	var orderResponse dto.OrderResponse
 	if err := c.BodyParser(&order); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(dto.ErrorResponse{Error: err.Error()})
 	}
+
 	orderResponse, err := h.service.CreateOrder(order)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(dto.ErrorResponse{Error: err.Error()})
@@ -71,7 +74,7 @@ func (h *OrderHandler) GetOrderByID(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).JSON(order)
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(order)
+	return c.Status(fiber.StatusOK).JSON(order)
 }
 
 // GetAllOrders godoc

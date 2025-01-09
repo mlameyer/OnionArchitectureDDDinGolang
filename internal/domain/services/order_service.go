@@ -5,7 +5,7 @@ import (
 	"order-service/internal/domain/events"
 	"order-service/internal/domain/models"
 	"order-service/internal/domain/repositories"
-	"time"
+	"order-service/internal/infrastructure/logging"
 )
 
 type OrderService struct {
@@ -18,19 +18,18 @@ func NewOrderService(repo repositories.OrderRepository, eventPublisher EventPubl
 }
 
 func (s *OrderService) CreateOrder(order dto.OrderCreateDto) (dto.OrderResponse, error) {
-	newOrderDate := time.Now()
 	newOrder := models.Order{
-		ID:         1,
 		OrderID:    order.OrderID,
 		CustomerID: order.CustomerID,
-		OrderDate:  newOrderDate,
-		CreatedAt:  newOrderDate,
-		UpdatedAt:  newOrderDate,
+		OrderDate:  order.OrderDate,
+		CreatedAt:  order.OrderDate,
+		UpdatedAt:  order.OrderDate,
 	}
 
 	for _, item := range order.OrderItems {
 		newOrder.AddItem(
 			models.OrderItem{
+				OrderID:   newOrder.OrderID,
 				ProductID: item.ProductID,
 				Quantity:  item.Quantity,
 				Price:     item.Price,
@@ -59,7 +58,7 @@ func (s *OrderService) CreateOrder(order dto.OrderCreateDto) (dto.OrderResponse,
 	}
 
 	return dto.OrderResponse{
-		OrderID:     newOrder.ID,
+		OrderID:     newOrder.OrderID,
 		CustomerID:  newOrder.CustomerID,
 		TotalAmount: newOrder.TotalAmount,
 		Items:       convertToOrderItemResponse(newOrder.OrderItems),
@@ -68,12 +67,13 @@ func (s *OrderService) CreateOrder(order dto.OrderCreateDto) (dto.OrderResponse,
 
 func (s *OrderService) GetOrderByID(id uint) (*dto.OrderResponse, error) {
 	order, err := s.repo.FindByID(id)
+	logging.Logger.Info().Msgf("%v", order)
 	if err != nil {
 		return nil, err
 	}
 
 	return &dto.OrderResponse{
-		OrderID:     order.ID,
+		OrderID:     order.OrderID,
 		CustomerID:  order.CustomerID,
 		TotalAmount: order.TotalAmount,
 		Items:       convertToOrderItemResponse(order.OrderItems),
@@ -89,7 +89,7 @@ func (s *OrderService) GetAllOrders() ([]dto.OrderResponse, error) {
 	ordersResponse := make([]dto.OrderResponse, len(orders))
 	for i, order := range orders {
 		ordersResponse[i] = dto.OrderResponse{
-			OrderID:     order.ID,
+			OrderID:     order.OrderID,
 			CustomerID:  order.CustomerID,
 			Items:       convertToOrderItemResponse(order.OrderItems),
 			TotalAmount: order.TotalAmount,
@@ -120,7 +120,7 @@ func (s *OrderService) AddItemToOrder(id uint, item dto.OrderItemDto) (*dto.Orde
 	}
 
 	response := dto.OrderResponse{
-		OrderID:     order.ID,
+		OrderID:     order.OrderID,
 		CustomerID:  order.CustomerID,
 		Items:       convertToOrderItemResponse(order.OrderItems),
 		TotalAmount: order.TotalAmount,

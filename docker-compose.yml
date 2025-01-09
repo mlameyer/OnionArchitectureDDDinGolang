@@ -20,7 +20,7 @@ services:
       - .env.development
     volumes:
       - .:/app
-      - /c/Users/Matt/.aws:/root/.aws:ro
+      - /c/Users/zuckw/.aws:/root/.aws:ro
     command: ["sh", "-c", "go run cmd/main.go"]
     ports:
       - "8080:8080"

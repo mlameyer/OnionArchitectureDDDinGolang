@@ -6,10 +6,10 @@ import (
 )
 
 type Order struct {
-	ID          uint   `gorm:"primaryKey"`
+	ID          uint   `gorm:"primaryKey;autoIncrement"`
 	OrderID     string `gorm:"index"`
 	CustomerID  uint
-	OrderItems  []OrderItem
+	OrderItems  []OrderItem `gorm:"foreignKey:OrderID"`
 	TotalAmount float64
 	OrderDate   time.Time
 	CreatedAt   time.Time
@@ -18,8 +18,8 @@ type Order struct {
 
 // OrderItem struct definition
 type OrderItem struct {
-	ID        uint `gorm:"primaryKey"`
-	OrderID   uint `gorm:"index"`
+	ID        uint   `gorm:"primaryKey;autoIncrement"`
+	OrderID   string `gorm:"index"`
 	ProductID uint
 	Quantity  int
 	Price     float64
