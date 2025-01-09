@@ -17,16 +17,16 @@ func NewOrderService(repo repositories.OrderRepository, eventPublisher EventPubl
 	return &OrderService{repo: repo, eventPublisher: eventPublisher}
 }
 
-func (s *OrderService) CreateOrder(order dto.OrderCreateDto) (dto.OrderResponse, error) {
+func (s *OrderService) CreateOrder(orderDto dto.OrderCreateDto) (dto.OrderResponse, error) {
 	newOrder := models.Order{
-		OrderID:    order.OrderID,
-		CustomerID: order.CustomerID,
-		OrderDate:  order.OrderDate,
-		CreatedAt:  order.OrderDate,
-		UpdatedAt:  order.OrderDate,
+		OrderID:    orderDto.OrderID,
+		CustomerID: orderDto.CustomerID,
+		OrderDate:  orderDto.OrderDate,
+		CreatedAt:  orderDto.OrderDate,
+		UpdatedAt:  orderDto.OrderDate,
 	}
 
-	for _, item := range order.OrderItems {
+	for _, item := range orderDto.OrderItems {
 		newOrder.AddItem(
 			models.OrderItem{
 				OrderID:   newOrder.OrderID,

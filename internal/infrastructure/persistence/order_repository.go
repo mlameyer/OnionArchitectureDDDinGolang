@@ -21,12 +21,13 @@ func (r *GormOrderRepository) Save(order models.Order) error {
 
 func (r *GormOrderRepository) FindByID(id uint) (*models.Order, error) {
 	var order models.Order
-	err := r.db.First(&order, id).Error
+	// Use Preload to fetch OrderItems along with the Order
+	err := r.db.Preload("OrderItems").First(&order, id).Error
 	return &order, err
 }
 
 func (r *GormOrderRepository) FindAll() ([]models.Order, error) {
 	var orders []models.Order
-	err := r.db.Find(&orders).Error
+	err := r.db.Preload("OrderItems").Find(&orders).Error
 	return orders, err
 }

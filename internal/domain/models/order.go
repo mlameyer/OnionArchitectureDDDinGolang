@@ -7,9 +7,9 @@ import (
 
 type Order struct {
 	ID          uint   `gorm:"primaryKey;autoIncrement"`
-	OrderID     string `gorm:"index"`
+	OrderID     string `gorm:"uniqueIndex"`
 	CustomerID  uint
-	OrderItems  []OrderItem `gorm:"foreignKey:OrderID"`
+	OrderItems  []OrderItem `gorm:"foreignKey:OrderID;references:OrderID"`
 	TotalAmount float64
 	OrderDate   time.Time
 	CreatedAt   time.Time
